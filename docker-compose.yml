@@ -1,0 +1,75 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - docker_sqlsrv_postgres_default
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    networks:
+      - docker_sqlsrv_postgres_default
+
+  debezium:
+    image: debezium-connect-sql-connector
+    container_name: debezium
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: "kafka:29092"
+      GROUP_ID: "debezium-connect"
+      CONFIG_STORAGE_TOPIC: "debezium-connect-config"
+      OFFSET_STORAGE_TOPIC: "debezium-connect-offsets"
+      STATUS_STORAGE_TOPIC: "debezium-connect-status"
+      CONNECT_METRICS_REPORTER_TIMEOUT_MS: "60000"
+      CONNECT_METRICS_REPORTER_METRICS_RECORDING_INTERVAL_MS: "10000"
+      CONNECT_PLUGIN_PATH: "/kafka/connect"
+      SINK_CONNECTOR_CLASS: "io.confluent.connect.jdbc.JdbcSinkConnector"
+      CLASSPATH: "/kafka/connect/postgresql-42.7.4.jar:/kafka/connect/*"
+    volumes:
+      - ./setup/source-connector-config.json:/kafka/source-connector-config.json
+      - ./setup/sink-connector-config.json:/kafka/sink-connector-config.json
+    networks:
+      - docker_sqlsrv_postgres_default  
+
+  pgloader:
+    image: mattermost/mattermost-pgloader:latest
+    container_name: pgloader_migration
+    environment:
+      TDS_MAX_CONN: 1000
+    volumes:
+      - ./setup/source-connector-config.json:/kafka/source-connector-config.json
+      - ./setup/sink-connector-config.json:/kafka/sink-connector-config.json
+      - ./pgloader:/pgloader      
+    command: >
+      /bin/sh -c "sleep 30 &&
+      curl -X POST -H "Content-Type: application/json" --data @/kafka/sink-connector-config.json http://localhost:8083/connectors &&
+      curl -X POST -H "Content-Type: application/json" --data @/kafka/source-connector-config.json http://localhost:8083/connectors &&
+      pgloader /pgloader/migration.load"
+    networks:
+      - docker_sqlsrv_postgres_default  
+
+networks:
+  docker_sqlsrv_postgres_default:
+    external: true

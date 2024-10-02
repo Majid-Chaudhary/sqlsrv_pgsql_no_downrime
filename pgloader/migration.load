@@ -1,0 +1,8 @@
+LOAD DATABASE
+     FROM mssql://SA:Delta_12345678@192.168.31.206:1433/sakila
+     INTO postgresql://postgres:Delta_12345678@192.168.31.206:5432/sakila
+
+WITH include drop, create tables, create indexes, reset sequences, foreign keys,
+     workers = 2
+
+CAST type varchar to varchar drop not null using empty-string-to-null;

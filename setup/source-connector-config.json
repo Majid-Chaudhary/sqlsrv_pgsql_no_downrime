@@ -1,0 +1,29 @@
+{
+  "name": "sqlserver-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
+    "tasks.max": "1",
+    "database.hostname": "mssql_server",
+    "database.port": "1433",
+    "database.user": "SA",
+    "database.password": "Delta_12345678",
+    "database.server.name": "dbserver1",
+    "database.names": "sakila",
+    "table.include.list": "dbo.actor,dbo.category,dbo.language",
+    "database.history.kafka.bootstrap.servers": "kafka:29092",
+    "database.history.kafka.topic": "schema-changes.sakila",
+    "include.schema.changes": "true",
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter.schemas.enable": "true",
+    "database.encrypt": "false",
+    "topic.prefix": "dbserver1",
+    "snapshot.mode": "schema_only",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.sakila"
+  }
+}
