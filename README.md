@@ -3,7 +3,7 @@ Zero / near zero downtime migration from Ms-SQL Server to Postgresql.<br>
 In case of production environment, consider readonly mode till pgloader starts moving data. As soon as pgLoader kicks in, feel free  to change back to read-write.
 
 ### Create Debezium Image
-Navigate to setup folder and create debezium-connect image with the following command before running docker-compose
+Navigate to setup folder and create debezium-connect image with the following command before running docker-compose:<br>
 docker build -t debezium-connect-sql-connector .
 
 ### Enable Snapshot Isolation
