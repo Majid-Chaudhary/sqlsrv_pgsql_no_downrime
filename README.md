@@ -8,3 +8,6 @@ docker build -t debezium-connect-sql-connector .
 
 ### Enable Snapshot Isolation
 Navigate to setup folder and run snap_isolation.sql file on SQL Server database
+
+### CDC Test
+You can test CDC using cdc_test.py file from cdc_test folder. Setting up pyodbc for SQL Server does require some tinkering.
