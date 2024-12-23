@@ -41,7 +41,7 @@ def main():
         # connection to the SQL Server database
         connection = pyodbc.connect(
         'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=192.168.31.170;'
+        'SERVER=192.168.31.171;'
         'DATABASE=sakila;'
         'UID=SA;'
         'PWD=Delta_12345678;'

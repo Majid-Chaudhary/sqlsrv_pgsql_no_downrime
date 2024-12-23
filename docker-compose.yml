@@ -24,6 +24,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
     ports:
       - "9092:9092"
     networks:
@@ -63,10 +64,10 @@ services:
       - ./setup/sink-connector-config.json:/kafka/sink-connector-config.json
       - ./pgloader:/pgloader      
     command: >
-      /bin/sh -c "sleep 60 &&
-      curl -f -X POST -H 'Content-Type: application/json' --data @/kafka/sink-connector-config.json http://debezium:8083/connectors &&
-      curl -f -X POST -H 'Content-Type: application/json' --data @/kafka/source-connector-config.json http://debezium:8083/connectors &&
-      pgloader /pgloader/migration.load"
+      /bin/sh -c "sleep 30 &&
+      pgloader /pgloader/migration.load &&
+      curl -f -X POST -H 'Content-Type: application/json' --data @/kafka/source-connector-config.json http://debezium:8083/connectors &&      
+      curl -f -X POST -H 'Content-Type: application/json' --data @/kafka/sink-connector-config.json http://debezium:8083/connectors"
     networks:
       - oltp_create_sakila_docker_sqlsrv_postgres_default  
 
